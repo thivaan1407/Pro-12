@@ -1,129 +1,78 @@
-#!/bin/bash
 
-DB="CollegeDB"
-TOTAL=0
-FAILED=0
+USE CollegeDB;
 
-MYSQL="mysql -h 127.0.0.1 -P 3306 -uroot -p${MYSQL_ROOT_PASSWORD}"
+-- =========================
+-- DEPARTMENT TABLE
+-- =========================
+CREATE TABLE Department (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(50)
+);
 
-echo "=========================================="
-echo "RDBMS PROGRAM 12 - AUTOGRADING"
-echo "COLLEGE MANAGEMENT SYSTEM - ER RELATIONSHIPS"
-echo "=========================================="
-
-echo "Checking MySQL connection..."
-
-if $MYSQL -e "SELECT 1;" >/dev/null 2>&1; then
-    echo "MySQL connection successful."
-else
-    echo "ERROR: Cannot connect to MySQL."
-    exit 1
-fi
-
-echo
-echo "Creating fresh CollegeDB database..."
-
-$MYSQL -e "DROP DATABASE IF EXISTS $DB; CREATE DATABASE $DB;"
-
-echo "Executing student_solution.sql..."
-
-if $MYSQL < student_solution.sql >/dev/null 2>&1; then
-    echo "SQL execution completed."
-else
-    echo "ERROR: SQL execution failed."
-    exit 1
-fi
+INSERT INTO Department (DepartmentID, DepartmentName) VALUES
+(101, 'Computer Science'),
+(102, 'Mathematics'),
+(103, 'Physics');
 
 
-run_test() {
-    local num="$1"
-    local description="$2"
-    local query="$3"
-    local expected="$4"
+-- =========================
+-- STUDENT TABLE
+-- =========================
+CREATE TABLE Student (
+    StudentID INT PRIMARY KEY,
+    StudentName VARCHAR(50),
+    DepartmentID INT
+);
 
-    result=$($MYSQL -N -B "$DB" -e "$query" 2>/dev/null | tr -d '\r')
-
-    if [ "$result" = "$expected" ]; then
-        echo "Test Case $num PASS: $description"
-        TOTAL=$((TOTAL + 1))
-    else
-        echo "Test Case $num FAIL: $description"
-        echo "Expected: $expected"
-        echo "Got: $result"
-        FAILED=$((FAILED + 1))
-    fi
-}
+INSERT INTO Student (StudentID, StudentName, DepartmentID) VALUES
+(1001, 'Arun', 101),
+(1002, 'Priya', 102),
+(1003, 'Kumar', 101),
+(1004, 'Divya', 103);
 
 
-# Test Case 1
-run_test 1 "Department table exists" \
-"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$DB' AND table_name='Department';" \
-"1"
+-- =========================
+-- FACULTY TABLE
+-- =========================
+CREATE TABLE Faculty (
+    FacultyID INT PRIMARY KEY,
+    FacultyName VARCHAR(50),
+    DepartmentID INT
+);
+
+INSERT INTO Faculty (FacultyID, FacultyName, DepartmentID) VALUES
+(301, 'Ravi', 101),
+(302, 'Meena', 102),
+(303, 'Karthik', 103);
 
 
-# Test Case 2
-run_test 2 "Student table exists" \
-"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$DB' AND table_name='Student';" \
-"1"
+-- =========================
+-- COURSE TABLE
+-- =========================
+CREATE TABLE Course (
+    CourseID INT PRIMARY KEY,
+    CourseName VARCHAR(50)
+);
+
+INSERT INTO Course (CourseID, CourseName) VALUES
+(201, 'Database Systems'),
+(202, 'Data Structures'),
+(203, 'Mathematics'),
+(204, 'Physics');
 
 
-# Test Case 3
-run_test 3 "Faculty table exists" \
-"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$DB' AND table_name='Faculty';" \
-"1"
+-- =========================
+-- ENROLLMENT TABLE
+-- =========================
+CREATE TABLE Enrollment (
+    EnrollmentID INT PRIMARY KEY,
+    StudentID INT,
+    CourseID INT
+);
 
-
-# Test Case 4
-run_test 4 "Course table exists" \
-"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$DB' AND table_name='Course';" \
-"1"
-
-
-# Test Case 5
-run_test 5 "Enrollment table exists" \
-"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='$DB' AND table_name='Enrollment';" \
-"1"
-
-
-# Test Case 6
-run_test 6 "Department has 3 records" \
-"SELECT COUNT(*) FROM Department;" \
-"3"
-
-
-# Test Case 7
-run_test 7 "Student has 4 records" \
-"SELECT COUNT(*) FROM Student;" \
-"4"
-
-
-# Test Case 8
-run_test 8 "Faculty has 3 records" \
-"SELECT COUNT(*) FROM Faculty;" \
-"3"
-
-
-# Test Case 9
-run_test 9 "Course has 4 records" \
-"SELECT COUNT(*) FROM Course;" \
-"4"
-
-
-# Test Case 10
-run_test 10 "Enrollment has 5 records" \
-"SELECT COUNT(*) FROM Enrollment;" \
-"5"
-
-
-echo
-echo "=========================================="
-echo "Total Marks: $TOTAL / 10"
-echo "=========================================="
-
-if [ "$FAILED" -eq 0 ]; then
-    echo "All test cases passed."
-    exit 0
-else
-    echo "$FAILED test case(s) failed."
-    exit 1
-fi
+INSERT INTO Enrollment (EnrollmentID, StudentID, CourseID) VALUES
+(1, 1001, 201),
+(2, 1001, 202),
+(3, 1002, 203),
+(4, 1003, 201),
+(5, 1004, 204);
